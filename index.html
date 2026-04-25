@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FEI Thermo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <img src="fei-logo.svg" alt="FEI" class="header-logo" />
+    <h1>FEI Thermo</h1>
+    <span id="badge" class="disconnected">disconnected</span>
+  </header>
+
+  <section id="live">
+    <div class="temp-box">
+      <div class="temp" id="temp-f">—</div>
+      <div class="unit">°F</div>
+    </div>
+    <div class="row">
+      <span>Battery</span><span id="bat">— %</span>
+    </div>
+    <div class="row">
+      <span>Device</span><span id="dev-name">—</span>
+    </div>
+    <div class="row">
+      <span>HW / FW</span><span id="dev-ver">— / —</span>
+    </div>
+  </section>
+
+  <section id="controls">
+    <button id="btn-connect">Connect</button>
+    <button id="btn-disconnect" disabled>Disconnect</button>
+    <button id="btn-calibrate" disabled>Calibrate battery (set 100%)</button>
+    <button id="btn-light-sleep" disabled>Light Sleep</button>
+    <button id="btn-deep-sleep" disabled>Deep Sleep</button>
+  </section>
+
+  <section id="test">
+    <h2>Test Control</h2>
+    <div class="row">
+      <span>Duration (min)</span>
+      <input type="number" id="test-duration" min="1" max="120" value="5" style="width:72px;background:#2a2f36;color:#e8edf2;border:1px solid #3a4050;border-radius:4px;padding:2px 6px">
+    </div>
+    <div class="row">
+      <span>Target temp (°F)</span>
+      <input type="number" id="test-target" min="32" max="212" value="98.6" step="0.1" style="width:72px;background:#2a2f36;color:#e8edf2;border:1px solid #3a4050;border-radius:4px;padding:2px 6px">
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="btn-start-test" disabled>Start Test</button>
+      <button id="btn-abort-test" disabled>Abort</button>
+      <button id="btn-dismiss-test" disabled>Dismiss</button>
+    </div>
+    <div class="row">
+      <span>State</span><span id="test-state">—</span>
+    </div>
+    <div class="row">
+      <span>Countdown</span><span id="test-countdown">—</span>
+    </div>
+    <div class="row">
+      <span>Now / Target</span><span id="test-temps">—</span>
+    </div>
+    <progress id="test-progress" value="0" max="1" style="display:none"></progress>
+  </section>
+
+  <section id="ota">
+    <h2>Firmware update</h2>
+    <button id="btn-fw-latest">Download latest from GitHub</button>
+    <div style="margin:6px 0;color:#7b8593;font-size:0.85em">— or select local file —</div>
+    <input type="file" id="fw-file" accept=".s3th,.bin" />
+    <div id="fw-info" class="muted">select a <code>.s3th</code> image or download from GitHub</div>
+    <button id="btn-upload" disabled>Upload &amp; Apply</button>
+    <progress id="fw-progress" value="0" max="1"></progress>
+    <div id="fw-status" class="muted">idle</div>
+  </section>
+
+  <section id="chart-wrap">
+    <canvas id="chart" width="800" height="200"></canvas>
+    <div class="chart-legend">
+      <span class="legend-temp">Temperature (°F)</span>
+      <span class="legend-bat">Battery (%)</span>
+    </div>
+  </section>
+
+  <footer>
+    <span class="muted">Web Bluetooth — Chrome / Edge on HTTPS or localhost</span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
