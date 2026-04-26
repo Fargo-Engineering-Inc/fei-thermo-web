@@ -353,7 +353,9 @@ async function onFileChosen(e) {
     $('fw-info').textContent = 'not an S3TH image';
     state.imageBytes = null; updateUploadEnabled(); return;
   }
-  loadImageFromBuffer(buf);
+  const hdr = loadImageFromBuffer(buf);
+  $('fw-info').innerHTML = fwInfoHtml(hdr, file.name, null);
+  updateUploadEnabled();
 }
 
 function loadImageFromBuffer(buf) {
@@ -506,7 +508,12 @@ $('btn-connect').addEventListener('click',    () => connect().catch(e => alert(e
 $('btn-disconnect').addEventListener('click', disconnect);
 $('btn-fw-latest').addEventListener('click',  () => fetchLatestFirmware().catch(e => { $('fw-info').textContent = `Download failed: ${e.message}`; }));
 $('fw-file').addEventListener('change',       onFileChosen);
-$('btn-upload').addEventListener('click',     () => uploadImage().catch(e => alert(e.message)));
+$('btn-upload').addEventListener('click',     () => uploadImage().catch(e => {
+  const msg = e.message?.toLowerCase().includes('gatt')
+    ? 'Device disconnected during upload — reconnect and try again'
+    : e.message;
+  $('fw-status').textContent = `error: ${msg}`;
+}));
 $('btn-start-test').addEventListener('click', () => startTest().catch(e => alert(e.message)));
 $('btn-abort-test').addEventListener('click', () => abortTest().catch(e => alert(e.message)));
 $('btn-dismiss-test').addEventListener('click', () => dismissResult().catch(e => alert(e.message)));
