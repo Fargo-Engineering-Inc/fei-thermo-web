@@ -323,19 +323,23 @@ async function dismissResult(){ if (state.testCtrlChar) await state.testCtrlChar
 
 /* ── OTA ─────────────────────────────────────────────────────────────────── */
 function updateUploadEnabled() {
-  const batOk = state.batPct === null || state.batPct >= 20;
+  /* 0% means USB-powered or uncalibrated — firmware verifies on its side; only block 1–19% */
+  const batLow = state.batPct !== null && state.batPct > 0 && state.batPct < 20;
   const compat = state.imageHeader ? compatCheck(state.imageHeader) : null;
   const connected = !!(state.server && state.server.connected && state.ota);
-  const ok = connected && state.imageBytes && compat && compat.ok && batOk;
+  const ok = connected && state.imageBytes && compat && compat.ok && !batLow;
   $('btn-upload').disabled = !ok;
-  if (!state.imageBytes) {
-    /* no message — idle state */
-  } else if (!batOk) {
+  if (!state.imageBytes) return;
+  if (batLow) {
     $('fw-status').textContent = `battery ${state.batPct}% — charge to >20% before updating`;
   } else if (!connected) {
     $('fw-status').textContent = 'image ready — connect device to upload';
   } else if (compat && !compat.ok) {
     $('fw-status').textContent = `blocked: ${compat.msg}`;
+  } else if (state.batPct === 0) {
+    $('fw-status').textContent = 'battery reads 0% (USB-powered?) — ready to upload';
+  } else {
+    $('fw-status').textContent = 'ready to upload';
   }
 }
 

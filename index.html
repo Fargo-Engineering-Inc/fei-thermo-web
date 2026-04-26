@@ -66,6 +66,13 @@
 
   <section id="ota">
     <h2>Firmware update</h2>
+    <ol class="ota-steps">
+      <li>Connect to the device using the <strong>Connect</strong> button above.</li>
+      <li>Click <strong>Download latest from GitHub</strong> — or choose a local <code>.s3th</code> file.</li>
+      <li>Click <strong>Upload &amp; Apply</strong> and wait ~30 seconds for the device to reboot.</li>
+      <li>Reconnect after reboot to confirm the new firmware version.</li>
+    </ol>
+    <p class="ota-note">Battery shows 0%? Normal when powered by USB. The device checks the battery again before applying.</p>
     <button id="btn-fw-latest">Download latest from GitHub</button>
     <div style="margin:6px 0;color:#7b8593;font-size:0.85em">— or select local file —</div>
     <input type="file" id="fw-file" accept=".s3th,.bin" />
