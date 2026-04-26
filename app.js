@@ -323,15 +323,20 @@ async function dismissResult(){ if (state.testCtrlChar) await state.testCtrlChar
 
 /* ── OTA ─────────────────────────────────────────────────────────────────── */
 function updateUploadEnabled() {
-  /* 0% means USB-powered or uncalibrated — firmware verifies on its side; only block 1–19% */
-  const batLow = state.batPct !== null && state.batPct > 0 && state.batPct < 20;
+  const rawBatLow = state.batPct !== null && state.batPct > 0 && state.batPct < 20;
+  const overrideVisible = rawBatLow;
+  $('bat-override-wrap').style.display = overrideVisible ? 'block' : 'none';
+  if (!overrideVisible) $('bat-override').checked = false;
+  const batLow = rawBatLow && !$('bat-override').checked;
   const compat = state.imageHeader ? compatCheck(state.imageHeader) : null;
   const connected = !!(state.server && state.server.connected && state.ota);
   const ok = connected && state.imageBytes && compat && compat.ok && !batLow;
   $('btn-upload').disabled = !ok;
   if (!state.imageBytes) return;
-  if (batLow) {
-    $('fw-status').textContent = `battery ${state.batPct}% — charge to >20% before updating`;
+  if (rawBatLow && !$('bat-override').checked) {
+    $('fw-status').textContent = `battery ${state.batPct}% — charge to >20% or check override above`;
+  } else if (rawBatLow && $('bat-override').checked) {
+    $('fw-status').textContent = `battery ${state.batPct}% — override active, proceed with caution`;
   } else if (!connected) {
     $('fw-status').textContent = 'image ready — connect device to upload';
   } else if (compat && !compat.ok) {
@@ -420,9 +425,15 @@ async function fetchLatestFirmware() {
     btn.textContent = `Downloading ${asset.name}…`;
     let buf;
     try {
-      buf = await fetch(asset.browser_download_url).then(r => r.arrayBuffer());
-    } catch {
-      throw new Error('download failed — check internet connection');
+      /* browser_download_url goes through github.com which omits CORS headers on
+         the redirect. Use the API url with Accept: octet-stream instead — api.github.com
+         has proper CORS and resolves directly to the asset bytes. */
+      const dr = await fetch(asset.url, { headers: { Accept: 'application/octet-stream' } });
+      if (!dr.ok) throw new Error(`HTTP ${dr.status}`);
+      buf = await dr.arrayBuffer();
+    } catch (err) {
+      console.error('asset fetch failed:', err);
+      throw new Error(`download failed — ${err.message || 'check internet connection'}`);
     }
 
     const u8 = new Uint8Array(buf);
@@ -520,3 +531,4 @@ $('btn-dismiss-test').addEventListener('click', () => dismissResult().catch(e =>
 $('btn-calibrate').addEventListener('click',  () => calibrateBattery().catch(e => alert(e.message)));
 $('btn-light-sleep').addEventListener('click', () => sendSleep(0x01).catch(e => alert(e.message)));
 $('btn-deep-sleep').addEventListener('click',  () => sendSleep(0x02).catch(e => alert(e.message)));
+$('bat-override').addEventListener('change',   () => updateUploadEnabled());

@@ -73,6 +73,9 @@
       <li>Reconnect after reboot to confirm the new firmware version.</li>
     </ol>
     <p class="ota-note">Battery shows 0%? Normal when powered by USB. The device checks the battery again before applying.</p>
+    <label id="bat-override-wrap" style="display:none;color:#f39c12;font-size:0.88em;margin:6px 0">
+      <input type="checkbox" id="bat-override"> Override low battery check (not recommended on battery power)
+    </label>
     <button id="btn-fw-latest">Download latest from GitHub</button>
     <div style="margin:6px 0;color:#7b8593;font-size:0.85em">— or select local file —</div>
     <input type="file" id="fw-file" accept=".s3th,.bin" />
