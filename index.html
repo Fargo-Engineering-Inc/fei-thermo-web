@@ -64,6 +64,14 @@
     <progress id="test-progress" value="0" max="1" style="display:none"></progress>
   </section>
 
+  <section id="chart-wrap">
+    <canvas id="chart" width="800" height="200"></canvas>
+    <div class="chart-legend">
+      <span class="legend-temp">Temperature (°F)</span>
+      <span class="legend-bat">Battery (%)</span>
+    </div>
+  </section>
+
   <section id="ota">
     <h2>Firmware update</h2>
     <ol class="ota-steps">
@@ -85,14 +93,6 @@
     <div id="fw-status" class="muted">idle</div>
   </section>
 
-  <section id="chart-wrap">
-    <canvas id="chart" width="800" height="200"></canvas>
-    <div class="chart-legend">
-      <span class="legend-temp">Temperature (°F)</span>
-      <span class="legend-bat">Battery (%)</span>
-    </div>
-  </section>
-
   <div id="ble-warning" style="display:none;background:#3a1a1a;border:1px solid #c0392b;border-radius:6px;padding:12px 16px;margin:16px;color:#ff7b7b;font-size:0.9em">
     <strong>Web Bluetooth not supported in this browser.</strong><br>
     Use <a href="https://www.google.com/chrome/" style="color:#4aa8ff">Chrome</a> or <a href="https://www.microsoft.com/edge" style="color:#4aa8ff">Edge</a> on desktop — or Chrome on Android.
@@ -100,7 +100,7 @@
   </div>
 
   <footer>
-    <span class="muted">Web Bluetooth — Chrome / Edge on HTTPS or localhost &nbsp;·&nbsp; Safari / Firefox / iOS not supported</span>
+    <span class="muted">Web Bluetooth — Chrome / Edge on HTTPS or localhost &nbsp;·&nbsp; Safari / Firefox / iOS not supported &nbsp;·&nbsp; <span id="app-ver"></span></span>
   </footer>
 
   <script type="module" src="app.js"></script>

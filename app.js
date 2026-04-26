@@ -2,6 +2,7 @@
 // Requires Chrome / Edge on HTTPS or http://localhost.
 
 const GITHUB_REPO = 'Fargo-Engineering-Inc/fei-thermo-web';
+const APP_VERSION = 'web-2026-04-26-r1';
 
 const UUID = {
   DIS:        0x180a,
@@ -471,7 +472,7 @@ async function uploadImage() {
     /* write-no-resp matches the firmware characteristic — no L2CAP ack wait per chunk.
        5 ms inter-chunk pacing prevents NimBLE RX buffer overflow on the device side. */
     await state.dataChar.writeValueWithoutResponse(slice);
-    await new Promise(r => setTimeout(r, 5));
+    await new Promise(r => setTimeout(r, 20));
     const pct = Math.round((off + slice.length) / payload.length * 100);
     const elapsed = (Date.now() - state.otaStartTime) / 1000;
     const rate    = elapsed > 0 ? (off + slice.length) / elapsed : 0;
@@ -532,3 +533,5 @@ $('btn-calibrate').addEventListener('click',  () => calibrateBattery().catch(e =
 $('btn-light-sleep').addEventListener('click', () => sendSleep(0x01).catch(e => alert(e.message)));
 $('btn-deep-sleep').addEventListener('click',  () => sendSleep(0x02).catch(e => alert(e.message)));
 $('bat-override').addEventListener('change',   () => updateUploadEnabled());
+
+$('app-ver').textContent = `app ${APP_VERSION}`;
