@@ -468,8 +468,10 @@ async function uploadImage() {
   const CHUNK = 240;
   for (let off = 0; off < payload.length; off += CHUNK) {
     const slice = payload.slice(off, off + CHUNK);
-    await state.dataChar.writeValue(slice);
-    /* Update progress locally between status notifications */
+    /* write-no-resp matches the firmware characteristic — no L2CAP ack wait per chunk */
+    await state.dataChar.writeValueWithoutResponse(slice);
+    /* yield every 10 packets so the BLE stack can drain its send queue */
+    if ((off / CHUNK) % 10 === 9) await new Promise(r => setTimeout(r, 0));
     const pct = Math.round((off + slice.length) / payload.length * 100);
     const elapsed = (Date.now() - state.otaStartTime) / 1000;
     const rate    = elapsed > 0 ? (off + slice.length) / elapsed : 0;
