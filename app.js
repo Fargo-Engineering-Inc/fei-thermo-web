@@ -1,7 +1,7 @@
 // FEI S3 Thermo — Web Bluetooth client
 // Requires Chrome / Edge on HTTPS or http://localhost.
 
-const GITHUB_REPO = 'Fargo-Engineering-Inc/fei-thermo';
+const GITHUB_REPO = 'Fargo-Engineering-Inc/fei-thermo-web';
 
 const UUID = {
   DIS:        0x180a,
@@ -325,13 +325,17 @@ async function dismissResult(){ if (state.testCtrlChar) await state.testCtrlChar
 function updateUploadEnabled() {
   const batOk = state.batPct === null || state.batPct >= 20;
   const compat = state.imageHeader ? compatCheck(state.imageHeader) : null;
-  const ok = state.server && state.server.connected && state.ota &&
-             state.imageBytes && compat && compat.ok && batOk;
+  const connected = !!(state.server && state.server.connected && state.ota);
+  const ok = connected && state.imageBytes && compat && compat.ok && batOk;
   $('btn-upload').disabled = !ok;
-  if (!batOk) {
+  if (!state.imageBytes) {
+    /* no message — idle state */
+  } else if (!batOk) {
     $('fw-status').textContent = `battery ${state.batPct}% — charge to >20% before updating`;
+  } else if (!connected) {
+    $('fw-status').textContent = 'image ready — connect device to upload';
   } else if (compat && !compat.ok) {
-    $('fw-status').textContent = `cannot upload: ${compat.msg}`;
+    $('fw-status').textContent = `blocked: ${compat.msg}`;
   }
 }
 
@@ -485,6 +489,12 @@ async function calibrateBattery() {
 async function sendSleep(cmd) {
   if (!state.pwrCtrlChar) return;
   await state.pwrCtrlChar.writeValueWithoutResponse(new Uint8Array([cmd]));
+}
+
+/* ── browser compat check ────────────────────────────────────────────────── */
+if (!navigator.bluetooth) {
+  $('ble-warning').style.display = 'block';
+  $('btn-connect').disabled = true;
 }
 
 /* ── event listeners ─────────────────────────────────────────────────────── */
