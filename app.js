@@ -400,6 +400,11 @@ function fwInfoHtml(hdr, name, tag) {
 }
 
 /* 6 — offline detection */
+/* GitHub release assets redirect to release-assets.githubusercontent.com which has no
+   CORS headers. Fetch firmware from raw.githubusercontent.com instead (always CORS-open
+   for public repos). CI commits latest.s3th + latest.json to the repo tree on every build. */
+const RAW_FW = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/firmware`;
+
 async function fetchLatestFirmware() {
   const btn = $('btn-fw-latest');
   btn.disabled = true;
@@ -407,28 +412,21 @@ async function fetchLatestFirmware() {
   try {
     if (!navigator.onLine) throw new Error('no internet — check your network connection');
 
-    let rel;
+    let meta;
     try {
-      const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
+      const resp = await fetch(`${RAW_FW}/latest.json`);
       if (resp.status === 404) throw new Error('no firmware releases published yet');
-      if (resp.status === 403) throw new Error('GitHub API rate limited — try again in a minute');
-      if (!resp.ok) throw new Error(`GitHub API error ${resp.status}`);
-      rel = await resp.json();
+      if (!resp.ok) throw new Error(`metadata fetch error ${resp.status}`);
+      meta = await resp.json();
     } catch (e) {
       if (e.name === 'TypeError') throw new Error('cannot reach GitHub — check internet connection');
       throw e;
     }
 
-    const asset = rel.assets.find(a => a.name.endsWith('.s3th'));
-    if (!asset) throw new Error('no .s3th asset in latest release');
-
-    btn.textContent = `Downloading ${asset.name}…`;
+    btn.textContent = `Downloading ${meta.name}…`;
     let buf;
     try {
-      /* browser_download_url goes through github.com which omits CORS headers on
-         the redirect. Use the API url with Accept: octet-stream instead — api.github.com
-         has proper CORS and resolves directly to the asset bytes. */
-      const dr = await fetch(asset.url, { headers: { Accept: 'application/octet-stream' } });
+      const dr = await fetch(`${RAW_FW}/latest.s3th`);
       if (!dr.ok) throw new Error(`HTTP ${dr.status}`);
       buf = await dr.arrayBuffer();
     } catch (err) {
@@ -440,7 +438,7 @@ async function fetchLatestFirmware() {
     if (String.fromCharCode(...u8.slice(0, 4)) !== 'S3TH') throw new Error('not an S3TH image');
 
     const hdr = loadImageFromBuffer(buf);
-    $('fw-info').innerHTML = fwInfoHtml(hdr, asset.name, rel.tag_name);
+    $('fw-info').innerHTML = fwInfoHtml(hdr, meta.name, meta.tag);
     updateUploadEnabled();
   } catch (e) {
     $('fw-info').textContent = `Download failed: ${e.message}`;
