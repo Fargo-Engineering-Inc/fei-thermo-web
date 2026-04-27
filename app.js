@@ -385,8 +385,8 @@ function compatCheck(hdr) {
     return { ok: false, msg: `HW mismatch: device ${dHwMaj}.${dHwMin}, image ${hdr.hwMajor}.${hdr.hwMinor}` };
   const dev = (dSwMaj << 16) | (dSwMin << 8) | dSwPat;
   const img = (hdr.swMajor << 16) | (hdr.swMinor << 8) | hdr.swPatch;
-  if (img <= dev && !(hdr.flags & 0x01))
-    return { ok: false, msg: `not newer (${hdr.swMajor}.${hdr.swMinor}.${hdr.swPatch} ≤ ${state.sw})` };
+  if (img < dev && !(hdr.flags & 0x01))
+    return { ok: false, msg: `downgrade blocked (${hdr.swMajor}.${hdr.swMinor}.${hdr.swPatch} < ${state.sw})` };
   return { ok: true };
 }
 
