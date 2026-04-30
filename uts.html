@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FEI Thermo — UTS</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .uts-card {
+      background: #1e2329;
+      border: 1px solid #3a4050;
+      border-radius: 10px;
+      padding: 24px;
+      margin: 16px;
+      max-width: 600px;
+    }
+    .uts-step-label {
+      font-size: 0.78em;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #7b8593;
+      margin-bottom: 6px;
+    }
+    .uts-title {
+      font-size: 1.3em;
+      font-weight: 600;
+      color: #e8edf2;
+      margin-bottom: 16px;
+    }
+    .uts-photos {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .uts-photos figure {
+      flex: 1;
+      margin: 0;
+      text-align: center;
+    }
+    .uts-photos img {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #3a4050;
+      background: #12161c;
+      min-height: 140px;
+      object-fit: cover;
+    }
+    .uts-photos figcaption {
+      font-size: 0.78em;
+      color: #7b8593;
+      margin-top: 6px;
+    }
+    .uts-instruction {
+      color: #c8d0db;
+      font-size: 1em;
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+    .uts-countdown {
+      font-size: 3em;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #4aa8ff;
+      text-align: center;
+      margin: 12px 0;
+      letter-spacing: 0.05em;
+    }
+    .uts-temp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #12161c;
+      border-radius: 6px;
+      padding: 10px 16px;
+      margin-bottom: 10px;
+      font-size: 1.05em;
+    }
+    .uts-temp-row .label { color: #7b8593; }
+    .uts-temp-row .value { font-weight: 600; color: #e8edf2; }
+    .uts-progress {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      accent-color: #4aa8ff;
+      margin-bottom: 14px;
+    }
+    .uts-result {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .uts-result .verdict {
+      font-size: 2.8em;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .uts-result .verdict.pass { color: #3dd598; }
+    .uts-result .verdict.fail { color: #ff5c5c; }
+    .uts-result .reason {
+      color: #c8d0db;
+      font-size: 0.95em;
+      margin-bottom: 20px;
+      min-height: 1.4em;
+    }
+    .uts-bat-warn {
+      background: #3a2200;
+      border: 1px solid #f39c12;
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #f39c12;
+      font-size: 0.9em;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .uts-btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    #uts-ble-warn {
+      display: none;
+      background: #3a1a1a;
+      border: 1px solid #c0392b;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 16px;
+      color: #ff7b7b;
+      font-size: 0.9em;
+    }
+    /* hide all steps by default; JS shows the active one */
+    .uts-step { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="fei-logo.svg" alt="FEI" class="header-logo" />
+    <h1>FEI Thermo — UTS</h1>
+    <span id="uts-badge" class="disconnected">disconnected</span>
+  </header>
+
+  <div id="uts-ble-warn">
+    <strong>Web Bluetooth not supported.</strong><br>
+    Use Chrome or Edge on desktop — or Chrome on Android.
+    Safari, Firefox, and iOS are not supported.
+  </div>
+
+  <!-- ── Step 1: Install ─────────────────────────────────────────────────── -->
+  <div id="step-install" class="uts-step uts-card">
+    <div class="uts-step-label">Step 1 of 3</div>
+    <div class="uts-title">Install FEI Thermo</div>
+
+    <div class="uts-photos">
+      <figure>
+        <img src="images/uts-charge-install.jpg"
+             alt="FEI Thermo plugged into charge bulkhead on test cell"
+             onerror="this.style.cssText='min-height:140px;display:flex;align-items:center;justify-content:center'" />
+        <figcaption>Plug into charge bulkhead (test cell)</figcaption>
+      </figure>
+      <figure>
+        <img src="images/uts-cab-install.jpg"
+             alt="FEI Thermo installed in cab"
+             onerror="this.style.cssText='min-height:140px;display:flex;align-items:center;justify-content:center'" />
+        <figcaption>Install in cab</figcaption>
+      </figure>
+    </div>
+
+    <p class="uts-instruction">
+      Plug the FEI Thermo into the charge bulkhead on the test cell, then mount
+      the unit in the cab as shown. Confirm the display powers on.
+    </p>
+
+    <div class="uts-btn-row">
+      <button id="btn-install-confirm">Confirm — unit installed</button>
+    </div>
+  </div>
+
+  <!-- ── Step 2: Connect + battery check ───────────────────────────────────── -->
+  <div id="step-connect" class="uts-step uts-card">
+    <div class="uts-step-label">Step 2 of 3</div>
+    <div class="uts-title">Connect &amp; verify battery</div>
+
+    <p class="uts-instruction">
+      Connect to the FEI Thermo via Bluetooth. Battery must be above 20% to run
+      the test.
+    </p>
+
+    <div id="uts-bat-warn" class="uts-bat-warn">
+      Battery is <strong id="uts-bat-pct">—</strong>% — charge to above 20% before
+      running the test.
+    </div>
+
+    <div class="uts-temp-row">
+      <span class="label">Battery</span>
+      <span class="value" id="connect-bat">—</span>
+    </div>
+    <div class="uts-temp-row">
+      <span class="label">Device</span>
+      <span class="value" id="connect-dev">—</span>
+    </div>
+    <div class="uts-temp-row">
+      <span class="label">FW</span>
+      <span class="value" id="connect-fw">—</span>
+    </div>
+
+    <div class="uts-btn-row" style="margin-top:16px">
+      <button id="btn-uts-connect">Connect via Bluetooth</button>
+      <button id="btn-start-uts-test" disabled>Start test (33 °F / 15 min)</button>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Running ───────────────────────────────────────────────────── -->
+  <div id="step-running" class="uts-step uts-card">
+    <div class="uts-step-label">Step 3 of 3 — running</div>
+    <div class="uts-title">Test in progress</div>
+
+    <div class="uts-countdown" id="run-countdown">—:——</div>
+    <progress id="run-progress" class="uts-progress" value="0" max="1"></progress>
+
+    <div class="uts-temp-row">
+      <span class="label">Current temp</span>
+      <span class="value" id="run-cur-temp">—</span>
+    </div>
+    <div class="uts-temp-row">
+      <span class="label">Target temp</span>
+      <span class="value" id="run-tgt-temp">33.0 °F</span>
+    </div>
+    <div class="uts-temp-row">
+      <span class="label">Battery</span>
+      <span class="value" id="run-bat">—</span>
+    </div>
+
+    <div class="uts-btn-row" style="margin-top:16px">
+      <button id="btn-abort-uts">Abort test</button>
+    </div>
+  </div>
+
+  <!-- ── Result ────────────────────────────────────────────────────────────── -->
+  <div id="step-result" class="uts-step uts-card">
+    <div class="uts-step-label">Result</div>
+    <div class="uts-title" id="result-title">—</div>
+
+    <div class="uts-result">
+      <div class="verdict" id="result-verdict">—</div>
+      <div class="reason"  id="result-reason">—</div>
+    </div>
+
+    <div class="uts-temp-row">
+      <span class="label">Final temp</span>
+      <span class="value" id="result-temp">—</span>
+    </div>
+    <div class="uts-temp-row">
+      <span class="label">Target</span>
+      <span class="value">33.0 °F</span>
+    </div>
+
+    <div class="uts-btn-row" style="margin-top:18px">
+      <button id="btn-result-dismiss">Dismiss &amp; reset device</button>
+      <button id="btn-result-restart">Run again</button>
+    </div>
+  </div>
+
+  <footer>
+    <span class="muted">
+      FEI Thermo UTS &nbsp;·&nbsp; Web Bluetooth — Chrome / Edge only &nbsp;·&nbsp;
+      <a href="index.html" style="color:#4aa8ff">Back to main app</a>
+    </span>
+  </footer>
+
+  <script type="module" src="uts.js"></script>
+</body>
+</html>

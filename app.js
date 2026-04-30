@@ -141,7 +141,7 @@ async function connect() {
     return;
   }
   const device = await navigator.bluetooth.requestDevice({
-    filters: [{ namePrefix: 'S3-Thermo' }, { namePrefix: 'FEI-Thermo' }],
+    filters: [{ namePrefix: 'FEI Thermo' }, { namePrefix: 'FEI-Thermo' }],
     optionalServices: [UUID.DIS, UUID.ESS, UUID.BAT_SVC, UUID.OTA_SVC, UUID.TEST_SVC, UUID.BAT_CAL_SVC, UUID.PWR_SVC],
   });
   state.device = device;
